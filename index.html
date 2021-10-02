@@ -201,7 +201,7 @@
           monto,
         }),
       });
-
+      console.log("respuesta transferencia", response);
       const data = await response.json();
       location.reload();
     } catch (e) {
@@ -242,13 +242,13 @@
       method: "DELETE",
     });
     getUsuarios();
+    getTransferencias();
   };
 
   /* -------------------------------------------------------- */
   const getTransferencias = async () => {
     const { data } = await axios.get("http://localhost:3000/transferencias");
     $(".transferencias").html("");
-
     $.each(data.rows, (i, c) => {
       $(".transferencias").append(`
               <tr>
@@ -265,7 +265,7 @@
   getTransferencias();
 
   const formatDate = (date) => {
-    const dateFormat = moment(date).format("L");
+    const dateFormat = moment(date).format("DD/MM/YYYY");
     const timeFormat = moment(date).format("LTS");
     return `${dateFormat} ${timeFormat}`;
   };

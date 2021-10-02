@@ -17,3 +17,4 @@ CREATE TABLE transferencias (
     FOREIGN KEY (emisor) REFERENCES usuarios(id), 
     FOREIGN KEY (receptor) REFERENCES usuarios(id)
     );
+

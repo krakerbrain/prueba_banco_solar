@@ -2,7 +2,7 @@ const http = require("http");
 const fs = require("fs");
 const url = require("url");
 
-const { guardarUsuario, getUsuarios, editUsuario, eliminarUsuario, getTransferencias } = require("./consultas");
+const { guardarUsuario, getUsuarios, editUsuario, eliminarUsuario, getTransferencias, getHistorial } = require("./consultas");
 
 http
   .createServer(async (req, res) => {
@@ -57,19 +57,24 @@ http
     }
 
     if (req.url == "/transferencia" && req.method == "POST") {
-      const registros = await getUsuarios();
-      const datosUser = registros.rows;
-
       let body = "";
       req.on("data", (chunk) => {
-        body += chunk.toString();
+        body += chunk;
       });
       req.on("end", async () => {
-        const datosTranfer = JSON.parse(body);
-
-        const result = await getTransferencias(datosTranfer);
+        const transferencia = Object.values(JSON.parse(body));
+        const result = await getTransferencias(transferencia);
+        console.log("result", result);
         res.end(JSON.stringify(result));
       });
+    }
+
+    if (req.url == "/transferencias" && req.method === "GET") {
+      try {
+        const historial = await getHistorial();
+        res.writeHeader(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(historial));
+      } catch (error) {}
     }
   })
   .listen(3000, console.log("Servidor ON en puerto 3000"));
