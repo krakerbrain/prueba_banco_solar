@@ -3,6 +3,7 @@ const fs = require("fs");
 const url = require("url");
 
 const { guardarUsuario, getUsuarios, editUsuario, eliminarUsuario, getTransferencias, getHistorial } = require("./consultas");
+const { send } = require("./correo");
 
 http
   .createServer(async (req, res) => {
@@ -25,6 +26,7 @@ http
       req.on("data", (chunk) => {
         body += chunk.toString();
       });
+      send();
       req.on("end", async () => {
         try {
           const usuario = JSON.parse(body);

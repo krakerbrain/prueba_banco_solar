@@ -21,6 +21,7 @@ _Estas instrucciones te permitirán obtener una copia del proyecto en funcionami
 - $ git clone https://github.com/krakerbrain/prueba_banco_solar
 - $ cd ../path/to/the/file
 - $ npm install
+- $ node index.js
 
 ### Requerimientos
 
@@ -46,6 +47,7 @@ _Estas instrucciones te permitirán obtener una copia del proyecto en funcionami
 - Se implementa módulo Singleton para usar solo una instancia de pool
 - En todas las consultas se usa el ID del usuario, que es la mejor forma de evitar que, por ejemplo,
   al existir usuarios con el mismo nombre, se repitan datos en la BD
+- Se implementa función de envío de correo para saber cuando alguien revisa la prueba
 
 ## Construido con 🛠️
 
@@ -57,6 +59,7 @@ _Estas instrucciones te permitirán obtener una copia del proyecto en funcionami
 - [http](https://nodejs.org/api/http.html)
 - [fileSystem](https://nodejs.org/api/fs.html)
 - [url](https://nodejs.org/api/url.html)
+- [nodemailer](https://nodemailer.com/about/)
 
 ## Autor ✒️
 
