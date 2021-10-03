@@ -39,7 +39,7 @@ _Estas instrucciones te permitirán obtener una copia del proyecto en funcionami
 
 #### Notas de construcción:
 
-- Para obtener el id en consultas de transferencias se modifico el valor del atributo values de la etiqueta ![<option>]
+- Para obtener el id en consultas de transferencias se modifico el valor del atributo values de la etiqueta option
   (revisar línea 240 y 241 de index.html)
 - Se implementó validación para evitar que se hagan transferencias entre un mismo usuario
   (revisar línea 197 de index.html)
