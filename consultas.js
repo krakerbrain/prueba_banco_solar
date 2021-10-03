@@ -1,16 +1,9 @@
-const { Pool } = require("pg");
+//Se usa implementación de Singleton en módulo poolbd
+const PoolSingleton = require("./poolbd");
+//Se le asigna a la constante el singleton generado
+const pool = PoolSingleton.getInstance();
 
-const pool = new Pool({
-  user: "mario",
-  host: "localhost",
-  database: "bancosolar",
-  password: "1234",
-  port: 5432,
-  max: 20,
-  idleTimeoutMillis: 5000,
-  connectionTimeoutMillis: 2000,
-});
-
+//Se crea la consulta que inserta en la tabla usuarios de la BD al usuario y el monto inicial
 const guardarUsuario = async (usuario) => {
   const values = Object.values(usuario);
   const consulta = {
@@ -26,8 +19,9 @@ const guardarUsuario = async (usuario) => {
   }
 };
 
+//Se crea la consulta que selecciona a todos los usuarios para mostrarlos en el front
+//se ordenan por ID para que no cambie su posicion en la tabla
 const getUsuarios = async () => {
-  pool.connect();
   try {
     const result = await pool.query("SELECT * FROM usuarios ORDER BY id");
     return result;
@@ -36,6 +30,7 @@ const getUsuarios = async () => {
   }
 };
 
+//Se crea consulta que actualiza la info del usuario en la tabla
 const editUsuario = async (datos) => {
   const consulta = {
     text: "UPDATE usuarios SET nombre = $2, balance = $3 WHERE id = $1 RETURNING *;",
@@ -51,6 +46,10 @@ const editUsuario = async (datos) => {
   }
 };
 
+//Se crean funcion que realiza dos consultas. Esta consulta se hace por el id, que se obtiene cambiando valores
+//en las lineas 242 y 243 del HTML
+//La primera consulta elimina todas las transferencias hechas por un usuario
+//La segunda, elimina al usuario de la tabla
 const eliminarUsuario = async (id) => {
   const client = await pool.connect();
 
@@ -61,7 +60,6 @@ const eliminarUsuario = async (id) => {
       text: `DELETE FROM transferencias WHERE emisor = $1 OR receptor = $2 RETURNING *;`,
       values: [id, id],
     };
-    console.log(borraTransf.values);
     const borrarT = await client.query(borraTransf);
 
     const borraUser = {
@@ -73,7 +71,7 @@ const eliminarUsuario = async (id) => {
     await client.query("COMMIT");
 
     console.log("Transferencia realizada con éxito: ", borrarU.rows[0]);
-    client.release();
+
     return borrarU;
   } catch (e) {
     await client.query("ROLLBACK");
@@ -82,9 +80,12 @@ const eliminarUsuario = async (id) => {
     console.log("Detalle del error ", e.detail);
     console.log("Tabla originaria del error ", e.table);
     console.log("Restriccion violada en el campo ", e.constraint);
+  } finally {
+    client.release();
   }
 };
 
+//Se crea función que realiza transferencias entre usuarios
 const getTransferencias = async (transferencia) => {
   const client = await pool.connect();
   const values = Object.values(transferencia);
@@ -114,7 +115,7 @@ const getTransferencias = async (transferencia) => {
     await client.query("COMMIT");
 
     console.log("Transferencia realizada con éxito: ", transfer.rows[0]);
-    client.release();
+
     return haber;
   } catch (e) {
     await client.query("ROLLBACK");
@@ -123,16 +124,28 @@ const getTransferencias = async (transferencia) => {
     console.log("Detalle del error ", e.detail);
     console.log("Tabla originaria del error ", e.table);
     console.log("Restriccion violada en el campo ", e.constraint);
+  } finally {
+    client.release();
   }
 };
 
+//Se crea consulta que obtiene el historial de transacciones
+//Se usa consulta con inner join para mostrar en el front el nombre de los usuarios
+//ya que se usaron en todas las consultas de transferencias el id de los mismos
+//EL RESULTADO SE DEVUELVE COMO ARREGLO
 const getHistorial = async () => {
   try {
-    const result = await pool.query(`SELECT t.fecha, e.nombre AS emisor, r.nombre AS receptor,t.monto
-                                    FROM transferencias AS t
-                                    INNER JOIN usuarios AS e ON t.emisor=e.id  
-                                    INNER JOIN usuarios AS r ON t.receptor=r.id;`);
-    return result;
+    const consulta = {
+      text: `SELECT t.fecha, e.nombre AS emisor, r.nombre AS receptor,t.monto
+      FROM transferencias AS t
+      INNER JOIN usuarios AS e ON t.emisor=e.id  
+      INNER JOIN usuarios AS r ON t.receptor=r.id;`,
+      rowMode: "array",
+    };
+
+    const tranfer = await pool.query(consulta);
+
+    return tranfer;
   } catch (e) {
     return e;
   }
